@@ -161,10 +161,12 @@
       })
       this.saveDir = ret['saveDir']
       this.redotAbout = ret['redotAbout']
-      this.checkSaveDir()
     },
     methods: {
       openFolder () {
+        if (!this.checkSaveDir()) {
+          return
+        }
         this.shell.showItemInFolder(this.saveDir + '/1')
       },
       setCurPage (pageNum) {
@@ -175,7 +177,9 @@
         if (this.saveDir === '') {
           this.$message.warning('请先设置下载目录')
           this.setting('setdir')
+          return false
         }
+        return true
       },
       setting (name) {
         if (name === 'about') {
@@ -285,6 +289,7 @@
             console.log(res)
             let reg = new RegExp('/', 'g')
             that.songFilename = res['song'] + ' - ' + res['singer'].replace(reg, '&')
+            that.songFilename = that.songFilename.replace(/\\+|\/+|:+|\*+|\?+|"+|<+|>+|\|+/, '')
             that.songUrlData = res['url']
           }
         })
@@ -331,7 +336,9 @@
       },
       download (type, url) {
         console.log(type, url)
-        this.checkSaveDir()
+        if (!this.checkSaveDir()) {
+          return
+        }
         this.percentage = 0
         let options = {
           url: 'http://moresound.tk/music/' + url,
@@ -340,6 +347,11 @@
         this.app.request_remote.get(options, (error, response, body) => {
           if (!error && response.statusCode === 200) {
             console.log(body)
+            let res = JSON.parse(body)
+            if (res['code'].toString() !== '0') {
+              this.$message.error(res['msg'])
+              return
+            }
             this.downloadFile(type, body)
             // let res = JSON.parse(body)
             // if (res.hasOwnProperty('code') && res['code'] !== 0) {
