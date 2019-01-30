@@ -24,6 +24,10 @@
                             <el-badge v-if="redotAbout" is-dot>关于</el-badge>
                             <el-badge v-if="!redotAbout" is-dot hidden>关于</el-badge>
                         </el-dropdown-item>
+                        <el-dropdown-item command="update">
+                            <el-badge v-if="redotUpdate" is-dot>更新</el-badge>
+                            <el-badge v-if="!redotUpdate" is-dot hidden>更新</el-badge>
+                        </el-dropdown-item>
                         <el-dropdown-item command="setdir">
                             设置下载路径
                         </el-dropdown-item>
@@ -101,7 +105,7 @@
 
 
         <el-dialog
-                title="关于"
+                :title="'版本：V' + version"
                 :visible.sync="dialogAbout"
                 width="40%">
             <span>一款高颜值的音乐下载器, 让你能非常优雅的下载音乐, 详细信息可以访问 Github<br>
@@ -144,6 +148,7 @@
     name: 'MainPage',
     data () {
       return {
+        version: '1.0.4',
         saveDir: '',
         keyword: '',
         searchEngine: 'qq',
@@ -170,6 +175,7 @@
         dialogVisible: false,
         dialogAbout: false,
         redotAbout: true,
+        redotUpdate: false,
         currentPage: 1,
         pageSize: 15,
         totalSize: 0,
@@ -181,6 +187,8 @@
           'content-type': 'multipart/form-data'
         },
         percentage: 0,
+        updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
+        updateFiles: [],
         shell: require('electron').shell,
         ipc: require('electron').ipcRenderer,
         app: require('electron').remote.app
@@ -192,6 +200,8 @@
       })
       this.saveDir = ret['saveDir']
       this.redotAbout = ret['redotAbout']
+      this.getNotice()
+      this.getUpdate()
     },
     methods: {
       openFolder () {
@@ -222,6 +232,22 @@
               'saveDir': this.saveDir,
               'redotAbout': false
             }
+          })
+        }
+        if (name === 'update') {
+          let msg = ''
+          let title = ''
+          if (this.updateFiles.length === 0) {
+            title = '目前使用的版本已经是最新版~'
+          } else {
+            title = '可以下载新版本安装替换~'
+            for (let i = 0; i < this.updateFiles.length; i++) {
+              let url = 'http://' + this.updateFiles[i]
+              msg = msg + '<a href="' + url + '">' + url + '</a><br/>'
+            }
+          }
+          this.$alert(msg, title, {
+            dangerouslyUseHTMLString: true
           })
         }
         if (name === 'setdir') {
@@ -474,6 +500,49 @@
               return
             }
             func(type, body)
+          }
+        })
+      },
+      getNotice () {
+        let options = {
+          url: this.updateUrl + 'notice'
+        }
+        let that = this
+        this.app.request_remote.get(options, (error, response, body) => {
+          if (!error && response.statusCode === 200) {
+            console.log(body)
+            let storageKey = 'music_jojo_notice_time'
+            let notices = JSON.parse(body).data
+            for (let i = 0; i < notices.length; i++) {
+              if (localStorage[storageKey] == null || localStorage[storageKey] < notices[i].CreatedAt) {
+                localStorage.setItem(storageKey, notices[i].CreatedAt)
+                that.$notify.success({
+                  title: '温馨提示',
+                  duration: 10000,
+                  message: notices[i].Msg
+                })
+              }
+            }
+          }
+        })
+      },
+      getUpdate () {
+        const os = require('os')
+        let options = {
+          url: this.updateUrl + 'update?os=' + os.platform() + '&arch=' + os.arch() + '&version=' + this.version
+        }
+        console.log(options)
+        let that = this
+        this.app.request_remote.get(options, (error, response, body) => {
+          if (!error && response.statusCode === 200) {
+            console.log(body)
+            let updateFiles = JSON.parse(body).data.filename
+            console.log(updateFiles)
+            updateFiles.shift()
+            if (updateFiles.length > 0) {
+              that.redotUpdate = true
+              that.updateFiles = updateFiles
+            }
           }
         })
       }

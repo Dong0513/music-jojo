@@ -46,7 +46,7 @@ function createWindow () {
     options.show = true // 创建即展示
     options.frame = true // 创建一个frameless窗口
     Menu.setApplicationMenu(null)
-    // options.backgroundColor = '#3f3c37' // 背景色
+    options.backgroundColor = '#ffffff' // 背景色
   }
   mainWindow = new BrowserWindow(options)
   // const menu = Menu.buildFromTemplate(template)
