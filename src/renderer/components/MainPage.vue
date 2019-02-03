@@ -189,6 +189,7 @@
         percentage: 0,
         updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
         updateFiles: [],
+        platform: require('os').platform(),
         shell: require('electron').shell,
         ipc: require('electron').ipcRenderer,
         app: require('electron').remote.app
@@ -208,7 +209,7 @@
         if (!this.checkSaveDir()) {
           return
         }
-        this.shell.showItemInFolder(this.saveDir + '/1')
+        this.shell.openItem(this.saveDir)
       },
       setCurPage (pageNum) {
         this.currentPage = pageNum
@@ -538,8 +539,8 @@
             console.log(body)
             let updateFiles = JSON.parse(body).data.filename
             console.log(updateFiles)
-            updateFiles.shift()
-            if (updateFiles.length > 0) {
+            if (updateFiles !== null && updateFiles.length > 1) {
+              updateFiles.shift()
               that.redotUpdate = true
               that.updateFiles = updateFiles
             }

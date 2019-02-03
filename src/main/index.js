@@ -2,10 +2,17 @@
 
 import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron'
 import * as fs from 'fs'
+import path from 'path'
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
-const adapter = new FileSync('db.json')
+const STORE_PATH = app.getPath('userData') // 获取electron应用的用户目录
+
+const fsExtra = require('fs-extra')
+if (!fsExtra.pathExistsSync(STORE_PATH)) { // 如果不存在路径
+  fsExtra.mkdirpSync(STORE_PATH) // 就创建
+}
+const adapter = new FileSync(path.join(STORE_PATH, '/music-jojo-db.json')) // 初始化lowdb读写的json文件名以及存储路径
 const db = low(adapter)
 
 /**
@@ -28,25 +35,25 @@ function createWindow () {
   const options = {
     height: 678,
     width: 800,
-    show: false,
-    // frame: true,
+    show: true,
     center: true,
     fullscreenable: false,
     resizable: true,
     title: 'music-jojo',
     vibrancy: 'ultra-dark',
-    transparent: true,
-    titleBarStyle: 'hidden',
+    backgroundColor: '#ffffff', // 背景色
     webPreferences: {
       backgroundThrottling: false,
       webSecurity: false
     }
   }
+  if (process.platform === 'darwin') { // 针对mac平台做出不同的配置
+  }
   if (process.platform === 'win32') { // 针对windows平台做出不同的配置
-    options.show = true // 创建即展示
     options.frame = true // 创建一个frameless窗口
+    options.transparent = true
+    options.titleBarStyle = 'hidden'
     Menu.setApplicationMenu(null)
-    options.backgroundColor = '#ffffff' // 背景色
   }
   mainWindow = new BrowserWindow(options)
   // const menu = Menu.buildFromTemplate(template)
