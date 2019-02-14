@@ -49,6 +49,11 @@ function createWindow () {
   }
   if (process.platform === 'darwin') { // 针对mac平台做出不同的配置
   }
+  if (process.platform === 'linux') { // 针对linux平台做出不同的配置
+    options.transparent = true
+    options.titleBarStyle = 'hidden'
+    Menu.setApplicationMenu(null)
+  }
   if (process.platform === 'win32') { // 针对windows平台做出不同的配置
     options.frame = true // 创建一个frameless窗口
     options.transparent = true
