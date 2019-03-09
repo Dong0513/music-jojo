@@ -1,6 +1,7 @@
 # music-jojo
 
 > 一款基于electron-vue的高颜值音乐下载器, 让你能非常优雅的下载音乐
+感谢moresound.tk提供的稳定的解析接口
 
 ![avatar](http://qiniu.zoranjojo.top/20190122142207.png)
 
