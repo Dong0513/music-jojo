@@ -46,22 +46,22 @@
                     label="歌名"
                     >
                 <template slot-scope="songData">
-                    <span v-html="songData.row.songname_ori"></span>
+                    <span style="cursor:pointer" v-html="songData.row.songname_ori" @click="search_key(songData.row.songname_ori)"></span>
                 </template>
             </el-table-column>
             <el-table-column
                     prop="singer"
                     label="歌手"
                     >
-                <template slot-scope="songData">
-                    <span v-html="songData.row.singer"></span>
+                <template slot-scope="songData" style="cursor:pointer" >
+                    <span style="cursor:pointer" v-html="songData.row.singer" @click="search_key(songData.row.singer)"></span>
                 </template>
             </el-table-column>
             <el-table-column
                     prop="albumname_ori"
                     label="专辑">
                 <template slot-scope="songData">
-                    <span v-html="songData.row.albumname_ori"></span>
+                    <span style="cursor:pointer" v-html="songData.row.albumname_ori" @click="search_key(songData.row.albumname_ori)"></span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -192,9 +192,9 @@
         redotAbout: true,
         redotUpdate: false,
         currentPage: 1,
-        pageSize: 15,
+        pageSize: 20,
         totalSize: 0,
-        baseUrl: 'http://127.0.0.1:5199/',
+        baseUrl: 'http://www.zoranjojo.top:5199/',
         updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
         updateFiles: [],
         platform: require('os').platform(),
@@ -278,6 +278,10 @@
             }
           })
         }
+      },
+      search_key (key) {
+        this.keyword = key
+        this.search()
       },
       search () {
         this.songData = []
