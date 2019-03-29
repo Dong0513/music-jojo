@@ -76,11 +76,16 @@
                             size="small">
                     </el-button>
                     <el-button
-                            @click.native.prevent="select(scope.$index, songData)"
-                            type="text"
+                            @click.native.prevent="downloadFileNew(scope.$index, songData)"
+                            icon="el-icon-download"
+                            circle
                             size="small">
-                        获取链接
                     </el-button>
+                    <div style="vertical-align: top;margin-left: 10px;display: inline-block;line-height: 0;" v-if="songData[scope.$index].downloading">
+                        <el-progress v-show="songData[scope.$index].percentage !== 100" type="circle" :width="32" :stroke-width="1" :percentage="songData[scope.$index].percentage"></el-progress>
+                        <el-progress v-show="songData[scope.$index].percentage === 100" type="circle" :width="32" :stroke-width="1" :percentage="songData[scope.$index].percentage" status="success"></el-progress>
+                    </div>
+
                 </template>
             </el-table-column>
         </el-table>
@@ -115,31 +120,31 @@
             <el-button type="primary" @click="dialogAbout = false">确 定</el-button>
             </span>
         </el-dialog>
-        <el-dialog
-                title="下载选择"
-                :visible.sync="dialogVisible"
-                width="40%">
-            <div v-loading.lock="selectLoading">
-                <img v-if="songUrlData.hasOwnProperty('专辑封面')" :src="songUrlData['专辑封面']" style="width: 55%; vertical-align: top;"/>
-                <div style="margin-left: 5px;width: 40%; display: inline-block">
-                    <div style="margin-bottom: 5px"><el-button @click="getLink('24AAC', songUrlData['24AAC'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('24AAC')">24AAC</el-button></div>
-                    <div style="margin-bottom: 5px"><el-button @click="getLink('128MP3', songUrlData['128MP3'], downloadFile)" size="mini" type="primary" round v-if="songUrlData.hasOwnProperty('128MP3')">128MP3</el-button></div>
-                    <div style="margin-bottom: 5px"><el-button @click="getLink('320MP3', songUrlData['320MP3'], downloadFile)" size="mini" type="success" round v-if="songUrlData.hasOwnProperty('320MP3')">320MP3</el-button></div>
-                    <div style="margin-bottom: 5px"><el-button @click="getLink('FLAC', songUrlData['FLAC'], downloadFile)" size="mini" type="info" round v-if="songUrlData.hasOwnProperty('FLAC')">FLAC</el-button></div>
-                    <div style="margin-bottom: 5px"><el-button @click="getLink('APE', songUrlData['APE'], downloadFile)" size="mini" type="warning" round v-if="songUrlData.hasOwnProperty('APE')">APE</el-button></div>
-                    <el-button-group>
-                        <el-button @click="getLink('MV', songUrlData['MV'], downloadFile)" size="mini" type="danger" round v-if="songUrlData.hasOwnProperty('MV')">MV</el-button>
-                        <el-button @click="getLink('lrc', songUrlData['lrc'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('lrc')">歌词</el-button>
-                    </el-button-group>
-                </div>
+        <!--<el-dialog-->
+                <!--title="下载选择"-->
+                <!--:visible.sync="dialogVisible"-->
+                <!--width="40%">-->
+            <!--<div v-loading.lock="selectLoading">-->
+                <!--<img v-if="songUrlData.hasOwnProperty('专辑封面')" :src="songUrlData['专辑封面']" style="width: 55%; vertical-align: top;"/>-->
+                <!--<div style="margin-left: 5px;width: 40%; display: inline-block">-->
+                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('24AAC', songUrlData['24AAC'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('24AAC')">24AAC</el-button></div>-->
+                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('128MP3', songUrlData['128MP3'], downloadFile)" size="mini" type="primary" round v-if="songUrlData.hasOwnProperty('128MP3')">128MP3</el-button></div>-->
+                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('320MP3', songUrlData['320MP3'], downloadFile)" size="mini" type="success" round v-if="songUrlData.hasOwnProperty('320MP3')">320MP3</el-button></div>-->
+                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('FLAC', songUrlData['FLAC'], downloadFile)" size="mini" type="info" round v-if="songUrlData.hasOwnProperty('FLAC')">FLAC</el-button></div>-->
+                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('APE', songUrlData['APE'], downloadFile)" size="mini" type="warning" round v-if="songUrlData.hasOwnProperty('APE')">APE</el-button></div>-->
+                    <!--<el-button-group>-->
+                        <!--<el-button @click="getLink('MV', songUrlData['MV'], downloadFile)" size="mini" type="danger" round v-if="songUrlData.hasOwnProperty('MV')">MV</el-button>-->
+                        <!--<el-button @click="getLink('lrc', songUrlData['lrc'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('lrc')">歌词</el-button>-->
+                    <!--</el-button-group>-->
+                <!--</div>-->
 
-                <el-progress style="margin-top: 5px" :stroke-width="10" :percentage="percentage"></el-progress>
-            </div>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="success" size="mini" round @click="openFolder">打开下载文件夹</el-button>
-                <el-button type="primary" size="mini" round @click="dialogVisible = false">确定</el-button>
-            </span>
-        </el-dialog>
+                <!--<el-progress style="margin-top: 5px" :stroke-width="10" :percentage="percentage"></el-progress>-->
+            <!--</div>-->
+            <!--<span slot="footer" class="dialog-footer">-->
+                <!--<el-button type="success" size="mini" round @click="openFolder">打开下载文件夹</el-button>-->
+                <!--<el-button type="primary" size="mini" round @click="dialogVisible = false">确定</el-button>-->
+            <!--</span>-->
+        <!--</el-dialog>-->
     </div>
 </template>
 
@@ -150,6 +155,7 @@
       return {
         version: '1.0.4',
         saveDir: '',
+        localSearch: false,
         keyword: '',
         searchEngine: 'qq',
         loading: false,
@@ -171,6 +177,15 @@
           cover: '',
           lrc: ''
         },
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Charset': 'UTF-8,*;q=0.5',
+          'Accept-Encoding': 'gzip,deflate,sdch',
+          'Accept-Language': 'en-US,en;q=0.8',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
+          'referer': 'http://m.y.qq.com',
+          'ios_useragent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+        },
         songFilename: '',
         dialogVisible: false,
         dialogAbout: false,
@@ -179,14 +194,7 @@
         currentPage: 1,
         pageSize: 15,
         totalSize: 0,
-        headers: {
-          'Cookie': 'Tip_of_the_day=2; encrypt_data=5ccfba13bd5b4343b3428176458710e1ffc926359bd13e3ec2ee75e261891484a92dec8d269619a2cc57ada1a2aabe6012baf2f135a17dc6ae4e5f2735054d438dd90f33889ddcc150025d7aaee1fb8956996beeef4ac0937599c42c0a90f689be52dedb0d0aef057255fb2a8e86cc84643a139acb83217e8d3a9a1ab022f583',
-          'Host': 'moresound.tk',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-          'X-Requested-With': 'XMLHttpRequest',
-          'content-type': 'multipart/form-data'
-        },
-        percentage: 0,
+        baseUrl: 'http://127.0.0.1:5199/',
         updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
         updateFiles: [],
         platform: require('os').platform(),
@@ -273,57 +281,87 @@
       },
       search () {
         this.songData = []
-        var options = {
-          url: 'http://moresound.tk/music/api.php?search=' + this.searchEngine,
-          headers: this.headers,
-          timeout: 5000,
-          formData: {
-            // 'w': encodeURIComponent(this.keyword),
-            'w': this.keyword,
-            'p': this.currentPage,
-            'n': this.pageSize
-          }
-        }
         this.loading = true
-        let that = this
-        this.app.request_remote.post(options, (error, response, body) => {
-          that.loading = false
-          if (error) {
-            that.$message.warning('搜索超时，请重新尝试')
-            console.log('error: ', error)
-          }
-          if (!error && response.statusCode === 200) {
-            console.log(body)
-            let res = JSON.parse(body)
-            if (res['code'].toString() !== '0') {
-              that.$message.warning(res['msg'])
-              return
-            }
-            if (res['num'].toString() === '0') {
-              that.$message.warning('抱歉，没有找到相关歌曲')
-              return
-            }
-            that.currentPage = parseInt(res['page'])
-            that.totalSize = parseInt(res['totalnum'])
-            that.songData = []
-            for (let i = 0; i < res['song_list'].length; i++) {
-              let singer = res['song_list'][i]['singer'][0]['name']
-              let songname = res['song_list'][i]['songname']
-              let albumname = res['song_list'][i]['albumname']
-              let songmid = res['song_list'][i]['songmid']
-              that.songData.push({
-                'id': i,
-                'loading': false,
-                'songname_ori': songname,
-                'songname': songname.replace(/<sup.*>(.|\n|\r)*<\/sup>/, '').replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
-                'albumname_ori': albumname,
-                'albumname': albumname.replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
-                'singer': singer,
-                'songmid': songmid
-              })
+
+        if (this.localSearch) {
+          let options = {
+            url: 'http://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
+            headers: this.headers,
+            formData: {
+              // 'w': encodeURIComponent(this.keyword),
+              'w': this.keyword,
+              'p': this.currentPage,
+              'n': this.pageSize,
+              'format': 'json'
             }
           }
-        })
+          let that = this
+          this.app.request_remote.get(options, (error, response, body) => {
+            that.loading = false
+            if (error) {
+              that.$message.warning('搜索超时，请重新尝试')
+              console.log('error: ', error)
+            }
+            if (!error && response.statusCode === 200) {
+              console.log(options)
+              console.log(body)
+            }
+          })
+        } else {
+          let options = {
+            url: this.baseUrl + 'search_music',
+            // headers: this.headers,
+            timeout: 5000,
+            formData: {
+              // 'w': encodeURIComponent(this.keyword),
+              'w': this.keyword,
+              'p': this.currentPage,
+              'n': this.pageSize,
+              'engine': this.searchEngine
+            }
+          }
+          let that = this
+          this.app.request_remote.get(options, (error, response, body) => {
+            that.loading = false
+            if (error) {
+              that.$message.warning('搜索超时，请重新尝试')
+              console.log('error: ', error)
+            }
+            if (!error && response.statusCode === 200) {
+              console.log(body)
+              let res = JSON.parse(body)
+              if (res['code'].toString() !== '0') {
+                that.$message.warning(res['msg'])
+                return
+              }
+              if (res['num'].toString() === '0') {
+                that.$message.warning('抱歉，没有找到相关歌曲')
+                return
+              }
+              that.currentPage = parseInt(res['page'])
+              that.totalSize = parseInt(res['totalnum'])
+              that.songData = []
+              for (let i = 0; i < res['song_list'].length; i++) {
+                let singer = res['song_list'][i]['singer']
+                let songname = res['song_list'][i]['title']
+                let albumname = res['song_list'][i]['album']
+                let songmid = res['song_list'][i]['mid']
+                that.songData.push({
+                  'id': i,
+                  'loading': false,
+                  'downloading': false,
+                  'percentage': 0,
+                  'songname_ori': songname,
+                  'songname': songname.replace(/<sup.*>(.|\n|\r)*<\/sup>/, '').replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
+                  'albumname_ori': albumname,
+                  'albumname': albumname.replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
+                  'singer': singer,
+                  'songmid': songmid
+                })
+              }
+            }
+          })
+        }
       },
       playMusic (url) {
         this.auditionLoading = false
@@ -337,15 +375,15 @@
         console.log(itemData)
         itemData.loading = true
         let options = {
-          url: 'http://moresound.tk/music/api.php?get_song=' + this.searchEngine,
-          headers: this.headers,
+          url: this.baseUrl + 'download_url',
           timeout: 5000,
           formData: {
-            'mid': itemData['songmid']
+            'mid': itemData['songmid'],
+            'engine': this.searchEngine
           }
         }
         let that = this
-        this.app.request_remote.post(options, (error, response, body) => {
+        this.app.request_remote.get(options, (error, response, body) => {
           if (error) {
             itemData.loading = false
             that.$message.warning('超时，请重新尝试')
@@ -354,156 +392,228 @@
           if (!error && response.statusCode === 200) {
             let res = JSON.parse(body)
             console.log(res)
-            that.auditionInfoTmp.artist = res['singer']
-            that.auditionInfoTmp.name = res['song']
-            that.auditionInfoTmp.cover = res['url']['专辑封面']
-            that.getLink('lrc', res['url']['lrc'], (type, body) => {
-              that.auditionInfoTmp.lrc = body
-            })
-            if (that.searchEngine === 'qq' || that.searchEngine === 'kw') {
-              that.getLink('24AAC', res['url']['24AAC'], (type, body) => {
-                console.log(body)
-                let res = JSON.parse(body)
-                itemData.loading = false
-                that.playMusic(res['url'])
-              })
-            }
-            if (that.searchEngine === 'kg' || that.searchEngine === 'xm') {
-              that.getLink('32AAC', res['url']['32AAC'], (type, body) => {
-                if (body === undefined) {
-                  that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
-                    console.log(body)
-                    let res = JSON.parse(body)
-                    itemData.loading = false
-                    that.playMusic(res['url'])
-                  })
-                } else {
-                  console.log(body)
-                  let res = JSON.parse(body)
-                  itemData.loading = false
-                  that.playMusic(res['url'])
-                }
-              })
-            }
-            if (that.searchEngine === 'bd') {
-              that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
-                console.log(body)
-                let res = JSON.parse(body)
-                itemData.loading = false
-                that.playMusic(res['url'])
-              })
-            }
-            if (that.searchEngine === 'wy') {
-              that.getLink('64AAC', res['url']['64AAC'], (type, body) => {
-                console.log(body)
-                let res = JSON.parse(body)
-                itemData.loading = false
-                that.playMusic(res['url'])
-              })
-            }
+            console.info(itemData)
+            that.auditionInfoTmp.artist = itemData['singer']
+            that.auditionInfoTmp.name = itemData['songname']
+            itemData.loading = false
+            that.playMusic(res['url'])
+            // that.auditionInfoTmp.artist = res['singer']
+            // that.auditionInfoTmp.name = res['song']
+            // that.auditionInfoTmp.cover = res['url']['专辑封面']
+            // that.getLink('lrc', res['url']['lrc'], (type, body) => {
+            //   that.auditionInfoTmp.lrc = body
+            // })
+            // if (that.searchEngine === 'qq' || that.searchEngine === 'kw') {
+            //   that.getLink('24AAC', res['url']['24AAC'], (type, body) => {
+            //     console.log(body)
+            //     let res = JSON.parse(body)
+            //     itemData.loading = false
+            //     that.playMusic(res['url'])
+            //   })
+            // }
+            // if (that.searchEngine === 'kg' || that.searchEngine === 'xm') {
+            //   that.getLink('32AAC', res['url']['32AAC'], (type, body) => {
+            //     if (body === undefined) {
+            //       that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
+            //         console.log(body)
+            //         let res = JSON.parse(body)
+            //         itemData.loading = false
+            //         that.playMusic(res['url'])
+            //       })
+            //     } else {
+            //       console.log(body)
+            //       let res = JSON.parse(body)
+            //       itemData.loading = false
+            //       that.playMusic(res['url'])
+            //     }
+            //   })
+            // }
+            // if (that.searchEngine === 'bd') {
+            //   that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
+            //     console.log(body)
+            //     let res = JSON.parse(body)
+            //     itemData.loading = false
+            //     that.playMusic(res['url'])
+            //   })
+            // }
+            // if (that.searchEngine === 'wy') {
+            //   that.getLink('64AAC', res['url']['64AAC'], (type, body) => {
+            //     console.log(body)
+            //     let res = JSON.parse(body)
+            //     itemData.loading = false
+            //     that.playMusic(res['url'])
+            //   })
+            // }
           }
         })
       },
-      select (index, rows) {
-        this.dialogVisible = true
-        this.selectLoading = true
+      downloadFileNew (index, rows) {
+        if (!this.checkSaveDir()) {
+          return
+        }
+
         let itemData = rows[index]
         console.log(itemData)
 
+        itemData.downloading = true
+        this.songFilename = itemData['songname'] + ' - ' + itemData['singer']
+        this.songFilename = this.songFilename.replace(/\\+|\/+|:+|\*+|\?+|"+|<+|>+|\|+/, '')
+
         let options = {
-          url: 'http://moresound.tk/music/api.php?get_song=' + this.searchEngine,
+          url: this.baseUrl + 'download_url',
           headers: this.headers,
           timeout: 5000,
           formData: {
-            'mid': itemData['songmid']
+            'mid': itemData['songmid'],
+            'engine': this.searchEngine
           }
         }
         let that = this
-        this.app.request_remote.post(options, (error, response, body) => {
-          that.selectLoading = false
+        this.app.request_remote.get(options, (error, response, body) => {
           if (error) {
+            itemData.loading = false
             that.$message.warning('超时，请重新尝试')
             console.log('error: ', error)
           }
           if (!error && response.statusCode === 200) {
             let res = JSON.parse(body)
             console.log(res)
-            let reg = new RegExp('/', 'g')
-            that.songFilename = res['song'] + ' - ' + res['singer'].replace(reg, '&')
-            that.songFilename = that.songFilename.replace(/\\+|\/+|:+|\*+|\?+|"+|<+|>+|\|+/, '')
-            that.songUrlData = res['url']
+
+            that.$message.success('获取直连成功，开始下载')
+            itemData.percentage = 0
+
+            var receivedBytes = 0
+            var totalBytes = 0
+
+            var req = that.app.request_remote({
+              method: 'GET',
+              uri: res['url']
+            })
+
+            var out = that.app.fs.createWriteStream(this.saveDir + '/' + this.songFilename + '.mp3')
+            req.pipe(out)
+
+            req.on('response', function (data) {
+              // Change the total bytes value to get progress later.
+              totalBytes = parseInt(data.headers['content-length'], 10)
+            })
+
+            req.on('data', function (chunk) {
+              receivedBytes += chunk.length
+              let per = parseInt(receivedBytes / totalBytes * 100)
+              if (per % 10 === 0) {
+                itemData.percentage = parseInt(receivedBytes / totalBytes * 100)
+              }
+              console.log(receivedBytes, totalBytes, itemData.percentage)
+            })
+
+            req.on('end', function () {
+              itemData.percentage = 100
+              console.log('下载完成')
+            })
           }
         })
       },
-      downloadFile (type, body) {
-        if (!this.checkSaveDir()) {
-          return
-        }
-        this.$message.success('获取直连成功，开始下载')
-        this.percentage = 0
-        if (type === 'lrc') {
-          this.app.fs.writeFile(this.saveDir + '/' + this.songFilename + '.lrc', body, (error) => {
-            if (error) {
-              console.log(error)
-            }
-          })
-          this.percentage = 100
-          return
-        }
-        let res = JSON.parse(body)
-        var receivedBytes = 0
-        var totalBytes = 0
-
-        var req = this.app.request_remote({
-          method: 'GET',
-          uri: res['url']
-        })
-
-        var out = this.app.fs.createWriteStream(this.saveDir + '/' + this.songFilename + '.' + res['suffix'])
-        req.pipe(out)
-
-        req.on('response', function (data) {
-          // Change the total bytes value to get progress later.
-          totalBytes = parseInt(data.headers['content-length'], 10)
-        })
-
-        let that = this
-        req.on('data', function (chunk) {
-          receivedBytes += chunk.length
-          that.percentage = parseInt(receivedBytes / totalBytes * 100)
-          console.log(receivedBytes, totalBytes, that.percentage)
-        })
-
-        req.on('end', function () {
-          that.percentage = 100
-          console.log('下载完成')
-        })
-      },
-      getLink (type, url, func) {
-        if (url === undefined) {
-          func(type, undefined)
-        }
-        console.log(type, url)
-        let options = {
-          url: 'http://moresound.tk/music/' + url,
-          headers: this.headers
-        }
-        this.app.request_remote.get(options, (error, response, body) => {
-          if (!error && response.statusCode === 200) {
-            console.log(body)
-            if (type === 'lrc') {
-              func(type, body)
-              return
-            }
-            let res = JSON.parse(body)
-            if (res['code'].toString() !== '0') {
-              this.$message.error(res['msg'])
-              return
-            }
-            func(type, body)
-          }
-        })
-      },
+      // select (index, rows) {
+      //   this.dialogVisible = true
+      //   this.selectLoading = true
+      //   let itemData = rows[index]
+      //   console.log(itemData)
+      //
+      //   let options = {
+      //     url: 'http://moresound.tk/music/api.php?get_song=' + this.searchEngine,
+      //     headers: this.headers,
+      //     timeout: 5000,
+      //     formData: {
+      //       'mid': itemData['songmid']
+      //     }
+      //   }
+      //   let that = this
+      //   this.app.request_remote.post(options, (error, response, body) => {
+      //     that.selectLoading = false
+      //     if (error) {
+      //       that.$message.warning('超时，请重新尝试')
+      //       console.log('error: ', error)
+      //     }
+      //     if (!error && response.statusCode === 200) {
+      //       let res = JSON.parse(body)
+      //       console.log(res)
+      //       let reg = new RegExp('/', 'g')
+      //       that.songFilename = res['song'] + ' - ' + res['singer'].replace(reg, '&')
+      //       that.songFilename = that.songFilename.replace(/\\+|\/+|:+|\*+|\?+|"+|<+|>+|\|+/, '')
+      //       that.songUrlData = res['url']
+      //     }
+      //   })
+      // },
+      // downloadFile (type, body) {
+      //   if (!this.checkSaveDir()) {
+      //     return
+      //   }
+      //   this.$message.success('获取直连成功，开始下载')
+      //   this.percentage = 0
+      //   if (type === 'lrc') {
+      //     this.app.fs.writeFile(this.saveDir + '/' + this.songFilename + '.lrc', body, (error) => {
+      //       if (error) {
+      //         console.log(error)
+      //       }
+      //     })
+      //     this.percentage = 100
+      //     return
+      //   }
+      //   let res = JSON.parse(body)
+      //   var receivedBytes = 0
+      //   var totalBytes = 0
+      //
+      //   var req = this.app.request_remote({
+      //     method: 'GET',
+      //     uri: res['url']
+      //   })
+      //
+      //   var out = this.app.fs.createWriteStream(this.saveDir + '/' + this.songFilename + '.' + res['suffix'])
+      //   req.pipe(out)
+      //
+      //   req.on('response', function (data) {
+      //     // Change the total bytes value to get progress later.
+      //     totalBytes = parseInt(data.headers['content-length'], 10)
+      //   })
+      //
+      //   let that = this
+      //   req.on('data', function (chunk) {
+      //     receivedBytes += chunk.length
+      //     that.percentage = parseInt(receivedBytes / totalBytes * 100)
+      //     console.log(receivedBytes, totalBytes, that.percentage)
+      //   })
+      //
+      //   req.on('end', function () {
+      //     that.percentage = 100
+      //     console.log('下载完成')
+      //   })
+      // },
+      // getLink (type, url, func) {
+      //   if (url === undefined) {
+      //     func(type, undefined)
+      //   }
+      //   console.log(type, url)
+      //   let options = {
+      //     url: 'http://moresound.tk/music/' + url,
+      //     headers: this.headers
+      //   }
+      //   this.app.request_remote.get(options, (error, response, body) => {
+      //     if (!error && response.statusCode === 200) {
+      //       console.log(body)
+      //       if (type === 'lrc') {
+      //         func(type, body)
+      //         return
+      //       }
+      //       let res = JSON.parse(body)
+      //       if (res['code'].toString() !== '0') {
+      //         this.$message.error(res['msg'])
+      //         return
+      //       }
+      //       func(type, body)
+      //     }
+      //   })
+      // },
       getNotice () {
         let options = {
           url: this.updateUrl + 'notice'
@@ -551,12 +661,15 @@
   }
 </script>
 
-<style scoped>
+<style>
     .el-select {
         width: 120px;
     }
     .item {
         margin-top: 5px;
         margin-right: 40px;
+    }
+    .el-progress__text {
+        font-size: 12px !important;
     }
 </style>
