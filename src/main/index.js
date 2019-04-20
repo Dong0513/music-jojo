@@ -86,10 +86,11 @@ app.on('activate', () => {
 })
 
 app.request_remote = require('request')
+app.got_remote = require('got')
 app.fs = fs
 app.dialog = dialog
 app.lowdb = db
-db.defaults({setting: { saveDir: '', redotAbout: true }})
+db.defaults({setting: { saveDir: '', redotAbout: true, localSearch: true }})
   .write()
 
 ipcMain.on('Config', (event, arg) => {

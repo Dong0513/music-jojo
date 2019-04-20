@@ -5,11 +5,11 @@
                 <el-input placeholder="请输入搜索的歌名，歌手，专辑" v-model="keyword" @keyup.enter.native="search" clearable prefix-icon="el-icon-search" class="input-with-select">
                     <el-select v-model="searchEngine" slot="prepend" placeholder="请选择平台">
                         <el-option label="QQ" value="qq"></el-option>
-                        <el-option label="酷我" value="kw"></el-option>
-                        <el-option label="虾米" value="xm"></el-option>
+                        <el-option label="网易" value="wy"></el-option>
                         <el-option label="酷狗" value="kg"></el-option>
                         <el-option label="百度" value="bd"></el-option>
-                        <el-option label="网易" value="wy"></el-option>
+                        <!--<el-option label="酷我" value="kw"></el-option>-->
+                        <!--<el-option label="虾米" value="xm"></el-option>-->
                     </el-select>
                     <el-button @click="search" slot="append" type="success">搜索</el-button>
                 </el-input>
@@ -28,8 +28,8 @@
                             <el-badge v-if="redotUpdate" is-dot>更新</el-badge>
                             <el-badge v-if="!redotUpdate" is-dot hidden>更新</el-badge>
                         </el-dropdown-item>
-                        <el-dropdown-item command="setdir">
-                            设置下载路径
+                        <el-dropdown-item command="setting">
+                            设置
                         </el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -46,7 +46,7 @@
                     label="歌名"
                     >
                 <template slot-scope="songData">
-                    <span style="cursor:pointer" v-html="songData.row.songname_ori" @click="search_key(songData.row.songname_ori)"></span>
+                    <span style="cursor:pointer" v-html="songData.row.songname_ori" @click="searchKey(songData.row.songname_ori)"></span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -54,14 +54,14 @@
                     label="歌手"
                     >
                 <template slot-scope="songData" style="cursor:pointer" >
-                    <span style="cursor:pointer" v-html="songData.row.singer" @click="search_key(songData.row.singer)"></span>
+                    <span style="cursor:pointer" v-html="songData.row.singer" @click="searchKey(songData.row.singer)"></span>
                 </template>
             </el-table-column>
             <el-table-column
                     prop="albumname_ori"
                     label="专辑">
                 <template slot-scope="songData">
-                    <span style="cursor:pointer" v-html="songData.row.albumname_ori" @click="search_key(songData.row.albumname_ori)"></span>
+                    <span style="cursor:pointer" v-html="songData.row.albumname_ori" @click="searchKey(songData.row.albumname_ori)"></span>
                 </template>
             </el-table-column>
             <el-table-column
@@ -120,31 +120,25 @@
             <el-button type="primary" @click="dialogAbout = false">确 定</el-button>
             </span>
         </el-dialog>
-        <!--<el-dialog-->
-                <!--title="下载选择"-->
-                <!--:visible.sync="dialogVisible"-->
-                <!--width="40%">-->
-            <!--<div v-loading.lock="selectLoading">-->
-                <!--<img v-if="songUrlData.hasOwnProperty('专辑封面')" :src="songUrlData['专辑封面']" style="width: 55%; vertical-align: top;"/>-->
-                <!--<div style="margin-left: 5px;width: 40%; display: inline-block">-->
-                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('24AAC', songUrlData['24AAC'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('24AAC')">24AAC</el-button></div>-->
-                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('128MP3', songUrlData['128MP3'], downloadFile)" size="mini" type="primary" round v-if="songUrlData.hasOwnProperty('128MP3')">128MP3</el-button></div>-->
-                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('320MP3', songUrlData['320MP3'], downloadFile)" size="mini" type="success" round v-if="songUrlData.hasOwnProperty('320MP3')">320MP3</el-button></div>-->
-                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('FLAC', songUrlData['FLAC'], downloadFile)" size="mini" type="info" round v-if="songUrlData.hasOwnProperty('FLAC')">FLAC</el-button></div>-->
-                    <!--<div style="margin-bottom: 5px"><el-button @click="getLink('APE', songUrlData['APE'], downloadFile)" size="mini" type="warning" round v-if="songUrlData.hasOwnProperty('APE')">APE</el-button></div>-->
-                    <!--<el-button-group>-->
-                        <!--<el-button @click="getLink('MV', songUrlData['MV'], downloadFile)" size="mini" type="danger" round v-if="songUrlData.hasOwnProperty('MV')">MV</el-button>-->
-                        <!--<el-button @click="getLink('lrc', songUrlData['lrc'], downloadFile)" size="mini" round v-if="songUrlData.hasOwnProperty('lrc')">歌词</el-button>-->
-                    <!--</el-button-group>-->
-                <!--</div>-->
-
-                <!--<el-progress style="margin-top: 5px" :stroke-width="10" :percentage="percentage"></el-progress>-->
-            <!--</div>-->
-            <!--<span slot="footer" class="dialog-footer">-->
-                <!--<el-button type="success" size="mini" round @click="openFolder">打开下载文件夹</el-button>-->
-                <!--<el-button type="primary" size="mini" round @click="dialogVisible = false">确定</el-button>-->
-            <!--</span>-->
-        <!--</el-dialog>-->
+        <el-dialog @closed="reloadSetting"
+                title="设置"
+                :visible.sync="dialogSetting"
+                width="40%">
+            <div>
+                <el-switch
+                    v-model="localSearch"
+                    active-color="#13ce66"
+                    active-text="开启代理模式，仅在海外使用打开">
+                </el-switch>
+            </div>
+            <div style="margin-top: 10px">
+                <el-button type="text" size="mini" @click="setDownloadDir">设置下载文件夹</el-button>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="success" size="mini" round @click="openFolder">打开下载文件夹</el-button>
+                <el-button type="primary" size="mini" round @click="settingConfirm">确定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -153,9 +147,9 @@
     name: 'MainPage',
     data () {
       return {
-        version: '1.0.4',
+        version: '1.0.5',
         saveDir: '',
-        localSearch: false,
+        localSearch: true,
         keyword: '',
         searchEngine: 'qq',
         loading: false,
@@ -187,7 +181,7 @@
           'ios_useragent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
         },
         songFilename: '',
-        dialogVisible: false,
+        dialogSetting: false,
         dialogAbout: false,
         redotAbout: true,
         redotUpdate: false,
@@ -198,21 +192,26 @@
         updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
         updateFiles: [],
         platform: require('os').platform(),
+        got: require('got'),
         shell: require('electron').shell,
         ipc: require('electron').ipcRenderer,
         app: require('electron').remote.app
       }
     },
     mounted () {
-      let ret = this.ipc.sendSync('Config', {
-        method: 'get'
-      })
-      this.saveDir = ret['saveDir']
-      this.redotAbout = ret['redotAbout']
+      this.reloadSetting()
       this.getNotice()
       this.getUpdate()
     },
     methods: {
+      reloadSetting () {
+        let ret = this.ipc.sendSync('Config', {
+          method: 'get'
+        })
+        this.saveDir = ret['saveDir']
+        this.redotAbout = ret['redotAbout']
+        this.localSearch = ret['localSearch']
+      },
       openFolder () {
         if (!this.checkSaveDir()) {
           return
@@ -259,58 +258,124 @@
             dangerouslyUseHTMLString: true
           })
         }
-        if (name === 'setdir') {
-          let that = this
-          this.app.dialog.showOpenDialog({
-            properties: ['openDirectory']
-          }, function (files) {
-            if (files) {
-              console.log(files[0])
-              that.saveDir = files[0]
-              that.ipc.sendSync('Config', {
-                method: 'set',
-                setting: {
-                  'saveDir': files[0],
-                  'redotAbout': that.redotAbout
-                }
-              })
-              that.$message.success('设置下载目录成功')
-            }
+        if (name === 'setting') {
+          this.dialogSetting = true
+        }
+      },
+      settingConfirm () {
+        this.ipc.sendSync('Config', {
+          method: 'set',
+          setting: {
+            'saveDir': this.saveDir,
+            'redotAbout': this.redotAbout,
+            'localSearch': this.localSearch
+          }
+        })
+        this.dialogSetting = false
+      },
+      setDownloadDir () {
+        let that = this
+        this.app.dialog.showOpenDialog({
+          properties: ['openDirectory']
+        }, function (files) {
+          if (files) {
+            console.log(files[0])
+            that.saveDir = files[0]
+            that.ipc.sendSync('Config', {
+              method: 'set',
+              setting: {
+                'saveDir': files[0],
+                'redotAbout': that.redotAbout
+              }
+            })
+            that.$message.success('设置下载目录成功')
+          }
+        })
+      },
+      searchKey (key) {
+        this.keyword = key
+        this.search()
+      },
+      searchCallback (res) {
+        console.log(res)
+
+        if (res['code'].toString() !== '0') {
+          this.$message.warning(res['msg'])
+          return
+        }
+        if (res['num'].toString() === '0') {
+          this.$message.warning('抱歉，没有找到相关歌曲')
+          return
+        }
+        this.currentPage = parseInt(res['page'])
+        this.totalSize = parseInt(res['totalnum'])
+        this.songData = []
+        for (let i = 0; i < res['song_list'].length; i++) {
+          let singer = res['song_list'][i]['singer']
+          let songname = res['song_list'][i]['title']
+          let albumname = res['song_list'][i]['album']
+          let songmid = res['song_list'][i]['mid']
+          this.songData.push({
+            'id': i,
+            'loading': false,
+            'downloading': false,
+            'percentage': 0,
+            'songname_ori': songname,
+            'songname': songname.replace(/<sup.*>(.|\n|\r)*<\/sup>/, '').replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
+            'albumname_ori': albumname,
+            'albumname': albumname.replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
+            'singer': singer,
+            'songmid': songmid
           })
         }
       },
-      search_key (key) {
-        this.keyword = key
-        this.search()
+      qqSearch (callback) {
+        let that = this
+        let opts = `w=${encodeURIComponent(this.keyword)}&p=${this.currentPage}&n=${this.pageSize}`
+        this.got(`http://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp?format=json&${opts}`, {
+          headers: this.headers,
+          responseType: 'json'
+        }).then(response => {
+          that.loading = false
+          let body = JSON.parse(response.body)
+          console.log(body)
+          let lists = body['data']['song']['list']
+          let musicList = []
+          for (let i = 0; i < lists.length; i++) {
+            let music = {}
+            music['source'] = 'qq'
+            music['id'] = lists[i]['songid']
+            music['title'] = lists[i]['songname']
+            let singers = []
+            for (let j = 0; j < lists[i]['singer'].length; j++) {
+              singers.push(lists[i]['singer'][j]['name'])
+            }
+            music['singer'] = singers.join('、')
+            music['album'] = lists[i]['albumname']
+            music['duration'] = parseInt(lists[i]['interval'])
+            music['size'] = (lists[i]['size128'] / 1048576).toFixed(2)
+            music['mid'] = lists[i]['songmid']
+            musicList.push(music)
+          }
+          let res = {
+            'code': 0,
+            'msg': '',
+            'num': body['data']['song']['curnum'],
+            'page': body['data']['song']['curpage'],
+            'totalnum': body['data']['song']['totalnum'],
+            'song_list': musicList
+          }
+          callback(res)
+        })
       },
       search () {
         this.songData = []
         this.loading = true
 
         if (this.localSearch) {
-          let options = {
-            url: 'http://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp',
-            headers: this.headers,
-            formData: {
-              // 'w': encodeURIComponent(this.keyword),
-              'w': this.keyword,
-              'p': this.currentPage,
-              'n': this.pageSize,
-              'format': 'json'
-            }
+          if (this.searchEngine === 'qq') {
+            this.qqSearch(this.searchCallback)
           }
-          let that = this
-          this.app.request_remote.get(options, (error, response, body) => {
-            that.loading = false
-            if (error) {
-              that.$message.warning('搜索超时，请重新尝试')
-              console.log('error: ', error)
-            }
-            if (!error && response.statusCode === 200) {
-              console.log(options)
-              console.log(body)
-            }
-          })
         } else {
           let options = {
             url: this.baseUrl + 'search_music',
@@ -334,35 +399,7 @@
             if (!error && response.statusCode === 200) {
               console.log(body)
               let res = JSON.parse(body)
-              if (res['code'].toString() !== '0') {
-                that.$message.warning(res['msg'])
-                return
-              }
-              if (res['num'].toString() === '0') {
-                that.$message.warning('抱歉，没有找到相关歌曲')
-                return
-              }
-              that.currentPage = parseInt(res['page'])
-              that.totalSize = parseInt(res['totalnum'])
-              that.songData = []
-              for (let i = 0; i < res['song_list'].length; i++) {
-                let singer = res['song_list'][i]['singer']
-                let songname = res['song_list'][i]['title']
-                let albumname = res['song_list'][i]['album']
-                let songmid = res['song_list'][i]['mid']
-                that.songData.push({
-                  'id': i,
-                  'loading': false,
-                  'downloading': false,
-                  'percentage': 0,
-                  'songname_ori': songname,
-                  'songname': songname.replace(/<sup.*>(.|\n|\r)*<\/sup>/, '').replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
-                  'albumname_ori': albumname,
-                  'albumname': albumname.replace('&nbsp;', ' ').replace(/^\s+|\s+$/g, ''),
-                  'singer': singer,
-                  'songmid': songmid
-                })
-              }
+              that.searchCallback(res)
             }
           })
         }
