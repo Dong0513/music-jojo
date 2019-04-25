@@ -114,9 +114,14 @@
                 :title="'版本：V' + version"
                 :visible.sync="dialogAbout"
                 width="40%">
-            <span>一款高颜值的音乐下载器, 让你能非常优雅的下载音乐, 详细信息可以访问 Github<br>
-                <a href="https://github.com/liuzhuoling2011/music-jojo" target="_blank">https://github.com/liuzhuoling2011/music-jojo</a>
-            </span>
+            <div style="text-align: center">
+                <span>一款高颜值的音乐下载器, 让你能非常优雅的下载音乐, 详细信息可以访问 Github<br>
+                    <a href="https://github.com/liuzhuoling2011/music-jojo" target="_blank">https://github.com/liuzhuoling2011/music-jojo</a>
+                </span>
+                <br/><br/>
+                <div>也可以关注下面公众号，获取最新信息~</div>
+                <div><img style="width: 35%" src="http://qiniu.zoranjojo.top/qrcode_for_gh_81(03-26-07-35-31).jpg"/></div>
+            </div>
             <span slot="footer" class="dialog-footer">
             <el-button type="primary" @click="dialogAbout = false">确 定</el-button>
             </span>
@@ -152,7 +157,7 @@
         version: '1.0.5',
         aplayer: '',
         saveDir: '',
-        localSearch: true,
+        localSearch: false,
         keyword: '',
         searchEngine: 'qq',
         loading: false,
@@ -203,11 +208,12 @@
         autoplay: false,
         // fixed: true,
         loop: 'all',
+        reverse: true,
         order: 'random',
         preload: 'auto',
         volume: 0.7,
         listFolded: false,
-        listMaxHeight: 90,
+        listMaxHeight: 150,
         lrcType: 3,
         audio: [
           // {
@@ -470,11 +476,12 @@
         let itemData = rows[index]
         console.info(itemData)
         this.auditionLoading = false
+        this.auditionInfo.cover = 'http://qiniu.zoranjojo.top/default_images.jpg'
         this.auditionInfo.artist = itemData['singer']
         this.auditionInfo.name = itemData['songname']
         this.auditionInfo.url = res['url']
 
-        this.aplayer.list.add(this.auditionInfo)
+        this.aplayer.list.add(Object.assign({}, this.auditionInfo))
         let audios = this.aplayer.list.audios
         console.log(audios)
         this.aplayer.list.switch(audios.length - 1)

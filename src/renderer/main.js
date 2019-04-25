@@ -6,16 +6,12 @@ import router from './router'
 import store from './store'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import APlayer from '@moefe/vue-aplayer'
+import 'aplayer/dist/APlayer.min.css'
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.use(ElementUI)
-Vue.use(APlayer, {
-  defaultCover: 'http://qiniu.zoranjojo.top/default_images.jpg',
-  productionTip: true
-})
 
 /* eslint-disable no-new */
 new Vue({
