@@ -76,6 +76,13 @@
                             size="small">
                     </el-button>
                     <el-button
+                            @click.native.prevent="getDirectUrl(scope.$index, songData, starMusicCallback)"
+                            icon="el-icon-star-off"
+                            circle
+                            :loading="songData[scope.$index].loading"
+                            size="small">
+                    </el-button>
+                    <el-button
                             @click.native.prevent="downloadFile(scope.$index, songData)"
                             icon="el-icon-download"
                             circle
@@ -165,13 +172,6 @@
         auditionLoading: false,
         songData: [],
         songUrlData: {},
-        auditionInfo: {
-          name: '',
-          artist: '',
-          url: '',
-          cover: '',
-          lrc: ''
-        },
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Charset': 'UTF-8,*;q=0.5',
@@ -472,19 +472,35 @@
           }
         })
       },
-      playMusicCallback (index, rows, res) {
-        let itemData = rows[index]
-        console.info(itemData)
-        this.auditionLoading = false
-        this.auditionInfo.cover = 'http://qiniu.zoranjojo.top/default_images.jpg'
-        this.auditionInfo.artist = itemData['singer']
-        this.auditionInfo.name = itemData['songname']
-        this.auditionInfo.url = res['url']
-
-        this.aplayer.list.add(Object.assign({}, this.auditionInfo))
+      musicListIndex (mid) {
         let audios = this.aplayer.list.audios
-        console.log(audios)
-        this.aplayer.list.switch(audios.length - 1)
+        for (let i = 0; i < audios.length; i++) {
+          if (audios[i].songmid === mid) {
+            return i
+          }
+        }
+        return -1
+      },
+      starMusicCallback (index, rows, res) {
+        let itemData = rows[index]
+        this.auditionLoading = false
+        let mIndex = this.musicListIndex(itemData['songmid'])
+        if (mIndex === -1) {
+          this.aplayer.list.add({
+            cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
+            artist: itemData['singer'],
+            name: itemData['songname'],
+            lrc: '',
+            url: res['url'],
+            songmid: itemData['songmid']
+          })
+          return this.aplayer.list.audios.length - 1
+        }
+        return mIndex
+      },
+      playMusicCallback (index, rows, res) {
+        let mIndex = this.starMusicCallback(index, rows, res)
+        this.aplayer.list.switch(mIndex)
         this.aplayer.play()
         // that.auditionInfo.artist = res['singer']
         // that.auditionInfo.name = res['song']
@@ -564,7 +580,7 @@
             curPercent = per
             itemData.percentage = per
           }
-          console.log(receivedBytes, totalBytes, itemData.percentage)
+          // console.log(receivedBytes, totalBytes, itemData.percentage)
         })
 
         req.on('end', function () {
@@ -643,5 +659,26 @@
     }
     .el-progress__text {
         font-size: 12px !important;
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        border-radius: 4px;
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, .2);
+        background: #ffff;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, .2);
+        background-color: #d9d9d9;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #919191;
     }
 </style>
