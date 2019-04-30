@@ -69,18 +69,23 @@
                     label="操作">
                 <template slot-scope="scope">
                     <el-button
-                            @click.native.prevent="getDirectUrl(scope.$index, songData, playMusicCallback)"
+                            @click.native.prevent="playMusic(scope.$index, songData)"
                             icon="el-icon-service"
                             circle
                             :loading="songData[scope.$index].loading"
                             size="small">
                     </el-button>
-                    <el-button
-                            @click.native.prevent="getDirectUrl(scope.$index, songData, starMusicCallback)"
+                    <el-button v-if="musicListIndex(songData[scope.$index].songmid) === -1"
+                            @click.native.prevent="starMusic(scope.$index, songData)"
                             icon="el-icon-star-off"
                             circle
-                            :loading="songData[scope.$index].loading"
                             size="small">
+                    </el-button>
+                    <el-button v-if="musicListIndex(songData[scope.$index].songmid) !== -1"
+                               @click.native.prevent="starMusic(scope.$index, songData)"
+                               icon="el-icon-star-on"
+                               circle
+                               size="small">
                     </el-button>
                     <el-button
                             @click.native.prevent="downloadFile(scope.$index, songData)"
@@ -120,7 +125,7 @@
         <el-dialog
                 :title="'版本：V' + version"
                 :visible.sync="dialogAbout"
-                width="40%">
+                width="45%">
             <div style="text-align: center">
                 <span>一款高颜值的音乐下载器, 让你能非常优雅的下载音乐, 详细信息可以访问 Github<br>
                     <a href="https://github.com/liuzhuoling2011/music-jojo" target="_blank">https://github.com/liuzhuoling2011/music-jojo</a>
@@ -139,7 +144,7 @@
                 width="40%">
             <div>
                 <el-switch
-                    v-model="localSearch"
+                    v-model="remoteSearch"
                     active-color="#13ce66"
                     active-text="开启代理模式，仅在海外使用打开">
                 </el-switch>
@@ -164,15 +169,16 @@
         version: '1.0.5',
         aplayer: '',
         saveDir: '',
-        localSearch: false,
+        remoteSearch: false,
         keyword: '',
         searchEngine: 'qq',
         loading: false,
         selectLoading: false,
         auditionLoading: false,
+        firstStarFlag: true,
         songData: [],
         songUrlData: {},
-        headers: {
+        fakeHeaders: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Charset': 'UTF-8,*;q=0.5',
           'Accept-Encoding': 'gzip,deflate,sdch',
@@ -180,6 +186,11 @@
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101 Firefox/60.0',
           'referer': 'http://m.y.qq.com',
           'ios_useragent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+        },
+        wgetHeaders: {
+          'Accept': '*/*',
+          'Accept-Encoding': 'identity',
+          'User-Agent': 'Wget/1.19.5 (darwin17.5.0)'
         },
         songFilename: '',
         dialogSetting: false,
@@ -206,27 +217,19 @@
       this.aplayer = new APlayer({
         container: document.getElementById('aplayer'),
         autoplay: false,
+        asyncPlay: this.playMusicInList,
+        cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
         // fixed: true,
         loop: 'all',
         reverse: true,
         order: 'random',
-        preload: 'auto',
+        preload: 'none',
         volume: 0.7,
         listFolded: false,
         listMaxHeight: 150,
         lrcType: 3,
         audio: [
           // {
-          //   name: '给我一个理由忘记',
-          //   artist: 'A-Lin',
-          //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-          //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-          // }, {
-          //   name: '给我一个理由忘记',
-          //   artist: 'A-Lin',
-          //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-          //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-          // }, {
           //   name: '给我一个理由忘记',
           //   artist: 'A-Lin',
           //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
@@ -247,7 +250,7 @@
         })
         this.saveDir = ret['saveDir']
         this.redotAbout = ret['redotAbout']
-        this.localSearch = ret['localSearch']
+        this.remoteSearch = ret['remoteSearch']
       },
       openFolder () {
         if (!this.checkSaveDir()) {
@@ -305,7 +308,7 @@
           setting: {
             'saveDir': this.saveDir,
             'redotAbout': this.redotAbout,
-            'localSearch': this.localSearch
+            'remoteSearch': this.remoteSearch
           }
         })
         this.dialogSetting = false
@@ -372,7 +375,7 @@
         let that = this
         let opts = `w=${encodeURIComponent(this.keyword)}&p=${this.currentPage}&n=${this.pageSize}`
         this.got(`http://c.y.qq.com/soso/fcgi-bin/search_for_qq_cp?format=json&${opts}`, {
-          headers: this.headers,
+          headers: this.fakeHeaders,
           responseType: 'json'
         }).then(response => {
           that.loading = false
@@ -411,14 +414,14 @@
         this.songData = []
         this.loading = true
 
-        if (this.localSearch) {
+        if (!this.remoteSearch) {
           if (this.searchEngine === 'qq') {
             this.qqSearch(this.searchCallback)
           }
         } else {
           let options = {
             url: this.baseUrl + 'search_music',
-            // headers: this.headers,
+            // fakeHeaders: this.fakeHeaders,
             timeout: 5000,
             formData: {
               // 'w': encodeURIComponent(this.keyword),
@@ -443,6 +446,144 @@
           })
         }
       },
+      musicListIndex (mid) {
+        let audios = this.aplayer.list.audios
+        return audios.findIndex((audio) => audio.songmid === mid)
+      },
+      addMusicToList (itemData) {
+        let mIndex = this.musicListIndex(itemData['songmid'])
+        if (mIndex === -1) {
+          this.aplayer.list.add({
+            cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
+            artist: itemData['singer'],
+            name: itemData['songname'],
+            lrc: '',
+            url: '',
+            songmid: itemData['songmid']
+          })
+          return this.aplayer.list.audios.length - 1
+        }
+        return mIndex
+      },
+      getRandomNum (Min, Max) {
+        var Range = Max - Min
+        var Rand = Math.random()
+        return (Min + Math.round(Rand * Range))
+      },
+      qqGetUrl (mid, callback) {
+        // let that = this
+        let guid = this.getRandomNum(1000000000, 10000000000)
+        let opts = `guid=${guid}`
+        this.got(`http://base.music.qq.com/fcgi-bin/fcg_musicexpress.fcg?format=json&json=3&${opts}`, {
+          headers: this.fakeHeaders,
+          responseType: 'json'
+        }).then(response => {
+          let body = JSON.parse(response.body)
+          console.log(body)
+          // let vkey = body.key
+
+          let prefix = ['M800', 'M500', 'C400']
+          for (let i = 0; i < prefix.length; i++) {
+            // let lurl = `http://dl.stream.qqmusic.qq.com/${prefix[i]}${mid}.mp3`
+            // (async () => {
+            //   try {
+            //     const request = await that.got(`${lurl}?vkey=${vkey}&guid=${guid}&fromtag=1`, {
+            //       headers: this.wgetHeaders,
+            //       stream: true,
+            //       responseType: 'json'
+            //     })
+            //     console.log(request)
+            //   } catch (error) {
+            //     console.log(error)
+            //   }
+            // })()
+            // that.loading = false
+          }
+        })
+      },
+      getUrlCallback () {
+
+      },
+      ayncUpdateUrl (audiosItem, callback, itemData = null) {
+        let index = this.musicListIndex(audiosItem['songmid'])
+        if (audiosItem['url'] !== '') {
+          callback(index)
+          return
+        }
+
+        // if (!this.remoteSearch) {
+        //   if (this.searchEngine === 'qq') {
+        //     this.qqGetUrl(this.getUrlCallback)
+        //   }
+        // } else {
+        {
+          let options = {
+            url: this.baseUrl + 'download_url',
+            timeout: 5000,
+            headers: this.fakeHeaders,
+            formData: {
+              'mid': audiosItem['songmid'],
+              'engine': this.searchEngine
+            }
+          }
+
+          let that = this
+          this.app.request_remote.get(options, (error, response, body) => {
+            if (error) {
+              that.$message.warning('超时，请重新尝试')
+              console.log('error: ', error)
+            }
+            if (!error && response.statusCode === 200) {
+              let res = JSON.parse(body)
+              console.log(res)
+              audiosItem['url'] = res['url']
+              if (itemData !== null) {
+                itemData['loading'] = false
+              }
+              callback(index)
+            }
+          })
+        }
+      },
+      playMusicByIndex (index) {
+        this.aplayer.list.switch(index)
+        this.aplayer.play()
+      },
+      playMusic (index, rows) {
+        let itemData = rows[index]
+        itemData['loading'] = true
+        let mIndex = this.musicListIndex(itemData['songmid'])
+        if (mIndex !== -1) {
+          let audio = this.aplayer.list.audios[mIndex]
+          if (audio['url'] !== '') {
+            itemData['loading'] = false
+            this.playMusicByIndex(mIndex)
+          } else {
+            this.ayncUpdateUrl(audio, this.playMusicByIndex, itemData)
+          }
+        } else {
+          let index = this.addMusicToList(itemData)
+          let audio = this.aplayer.list.audios[index]
+          this.ayncUpdateUrl(audio, this.playMusicByIndex, itemData)
+        }
+      },
+      playMusicInList (audio) {
+        let mIndex = this.musicListIndex(audio['songmid'])
+        if (audio['url'] !== '') {
+          this.playMusicByIndex(mIndex)
+        } else {
+          this.ayncUpdateUrl(audio, this.playMusicByIndex)
+        }
+      },
+      starMusic (index, rows) {
+        let itemData = rows[index]
+        let mIndex = this.addMusicToList(itemData)
+        if (this.firstStarFlag) {
+          this.firstStarFlag = false
+          let audio = this.aplayer.list.audios[mIndex]
+          this.ayncUpdateUrl(audio, () => {}, itemData)
+        }
+      },
       getDirectUrl (index, rows, urlCallback) {
         let itemData = rows[index]
         console.log(itemData)
@@ -450,7 +591,7 @@
         let options = {
           url: this.baseUrl + 'download_url',
           timeout: 5000,
-          headers: this.headers,
+          headers: this.fakeHeaders,
           formData: {
             'mid': itemData['songmid'],
             'engine': this.searchEngine
@@ -471,84 +612,6 @@
             urlCallback(index, rows, res)
           }
         })
-      },
-      musicListIndex (mid) {
-        let audios = this.aplayer.list.audios
-        for (let i = 0; i < audios.length; i++) {
-          if (audios[i].songmid === mid) {
-            return i
-          }
-        }
-        return -1
-      },
-      starMusicCallback (index, rows, res) {
-        let itemData = rows[index]
-        this.auditionLoading = false
-        let mIndex = this.musicListIndex(itemData['songmid'])
-        if (mIndex === -1) {
-          this.aplayer.list.add({
-            cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
-            artist: itemData['singer'],
-            name: itemData['songname'],
-            lrc: '',
-            url: res['url'],
-            songmid: itemData['songmid']
-          })
-          return this.aplayer.list.audios.length - 1
-        }
-        return mIndex
-      },
-      playMusicCallback (index, rows, res) {
-        let mIndex = this.starMusicCallback(index, rows, res)
-        this.aplayer.list.switch(mIndex)
-        this.aplayer.play()
-        // that.auditionInfo.artist = res['singer']
-        // that.auditionInfo.name = res['song']
-        // that.auditionInfo.cover = res['url']['专辑封面']
-        // that.getLink('lrc', res['url']['lrc'], (type, body) => {
-        //   that.auditionInfo.lrc = body
-        // })
-        // if (that.searchEngine === 'qq' || that.searchEngine === 'kw') {
-        //   that.getLink('24AAC', res['url']['24AAC'], (type, body) => {
-        //     console.log(body)
-        //     let res = JSON.parse(body)
-        //     itemData.loading = false
-        //     that.playMusic(res['url'])
-        //   })
-        // }
-        // if (that.searchEngine === 'kg' || that.searchEngine === 'xm') {
-        //   that.getLink('32AAC', res['url']['32AAC'], (type, body) => {
-        //     if (body === undefined) {
-        //       that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
-        //         console.log(body)
-        //         let res = JSON.parse(body)
-        //         itemData.loading = false
-        //         that.playMusic(res['url'])
-        //       })
-        //     } else {
-        //       console.log(body)
-        //       let res = JSON.parse(body)
-        //       itemData.loading = false
-        //       that.playMusic(res['url'])
-        //     }
-        //   })
-        // }
-        // if (that.searchEngine === 'bd') {
-        //   that.getLink('128MP3', res['url']['128MP3'], (type, body) => {
-        //     console.log(body)
-        //     let res = JSON.parse(body)
-        //     itemData.loading = false
-        //     that.playMusic(res['url'])
-        //   })
-        // }
-        // if (that.searchEngine === 'wy') {
-        //   that.getLink('64AAC', res['url']['64AAC'], (type, body) => {
-        //     console.log(body)
-        //     let res = JSON.parse(body)
-        //     itemData.loading = false
-        //     that.playMusic(res['url'])
-        //   })
-        // }
       },
       downloadCallback (index, rows, res) {
         this.$message.success('获取直连成功，开始下载')

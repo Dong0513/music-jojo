@@ -90,7 +90,7 @@ app.got_remote = require('got')
 app.fs = fs
 app.dialog = dialog
 app.lowdb = db
-db.defaults({setting: { saveDir: '', redotAbout: true, localSearch: true }})
+db.defaults({setting: { saveDir: '', redotAbout: true, remoteSearch: true }})
   .write()
 
 ipcMain.on('Config', (event, arg) => {
