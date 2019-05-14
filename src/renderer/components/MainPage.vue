@@ -110,7 +110,7 @@
                 layout="prev, pager, next">
             </el-pagination>
         </div>
-        <div id="aplayer"></div>
+        <!--<div id="aplayer"></div>-->
         <!--:audio="auditionInfo"/>-->
         <!--<aplayer ref="aplayer" :lrcType="1" loop="all" order="random" fixed="true"-->
              <!--:audio="[{-->
@@ -121,6 +121,7 @@
             <!--lrc: '[00:47.480]雨都停了这片天灰什麽呢\r\n[00:54.480]我还记得你说我们要快乐\r\n[01:01.160]深夜里的脚步声总是刺耳\r\n[01:06.370]害怕寂寞就让狂欢的城市陪我关灯\r\n[01:13.730]只是哪怕周围再多人感觉还是一个人\r\n[01:21.130]每当我笑了心却狠狠的哭着\r\n[01:26.810]\r\n[01:26.900]给我一个理由忘记那麽爱我的你\r\n[01:34.500]给我一个理由放弃当时做的决定\r\n[01:41.800]有些爱越想抽离却越更清晰\r\n[01:45.640]那最痛的距离是你不在身边\r\n[01:51.600]却在我的心里\r\n[01:59.130]\r\n[02:12.690]当我走在去过的每个地方\r\n[02:20.099]总会听到你那最自由的笑\r\n[02:26.919]当我回到一个人住的地方\r\n[02:32.550]最怕看到冬天你最爱穿的那件外套\r\n[02:40.110]只是哪怕周围再多人感觉还是一个人\r\n[02:47.279]每当我笑了心却狠狠的哭着\r\n[02:53.139]\r\n[02:54.890]给我一个理由忘记那么爱我的你\r\n[03:01.390]给我一个理由放弃当时做的决定\r\n[03:08.839]有些爱越想抽离却越更清晰\r\n[03:13.359]那最痛的距离是你不在身边\r\n[03:18.959]却在我的心里\r\n[03:26.750]\r\n[03:45.060]我找不到理由忘记大雨里的别离\r\n[03:52.799]我找不到理由放弃我等你的决心\r\n[03:59.149]有些爱越想抽离却越更清晰\r\n[04:03.780]那最痛的距离是你不在身边\r\n[04:09.179]却在我的心里\r\n[04:26.800]我想你\r\n[04:31.600]'-->
           <!--}]"/>-->
 
+        <v-nm-player ref="nmplayer" pos="top" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_images.jpg" unique="id"></v-nm-player>
 
         <el-dialog
                 :title="'版本：V' + version"
@@ -178,6 +179,15 @@
         firstStarFlag: true,
         songData: [],
         songUrlData: {},
+        songFilename: '',
+        dialogSetting: false,
+        dialogAbout: false,
+        redotAbout: true,
+        redotUpdate: false,
+        currentPage: 1,
+        pageSize: 20,
+        totalSize: 0,
+        audios: [],
         fakeHeaders: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Charset': 'UTF-8,*;q=0.5',
@@ -192,14 +202,6 @@
           'Accept-Encoding': 'identity',
           'User-Agent': 'Wget/1.19.5 (darwin17.5.0)'
         },
-        songFilename: '',
-        dialogSetting: false,
-        dialogAbout: false,
-        redotAbout: true,
-        redotUpdate: false,
-        currentPage: 1,
-        pageSize: 20,
-        totalSize: 0,
         baseUrl: 'http://www.zoranjojo.top:5199/',
         updateUrl: 'http://www.zoranjojo.top:9926/api/v1/',
         updateFiles: [],
@@ -447,13 +449,12 @@
         }
       },
       musicListIndex (mid) {
-        let audios = this.aplayer.list.audios
-        return audios.findIndex((audio) => audio.songmid === mid)
+        return this.audios.findIndex((audio) => audio.songmid === mid)
       },
       addMusicToList (itemData) {
         let mIndex = this.musicListIndex(itemData['songmid'])
         if (mIndex === -1) {
-          this.aplayer.list.add({
+          this.audios.push({
             cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
             artist: itemData['singer'],
             name: itemData['songname'],
@@ -461,7 +462,7 @@
             url: '',
             songmid: itemData['songmid']
           })
-          return this.aplayer.list.audios.length - 1
+          return this.audios.length - 1
         }
         return mIndex
       },
@@ -546,8 +547,9 @@
         }
       },
       playMusicByIndex (index) {
-        this.aplayer.list.switch(index)
-        this.aplayer.play()
+        this.$refs.nmplayer.playNewAudio(this.audios[index])
+        // this.aplayer.list.switch(index)
+        // this.aplayer.play()
       },
       playMusic (index, rows) {
         let itemData = rows[index]
@@ -567,12 +569,11 @@
           this.ayncUpdateUrl(audio, this.playMusicByIndex, itemData)
         }
       },
-      playMusicInList (audio) {
-        let mIndex = this.musicListIndex(audio['songmid'])
-        if (audio['url'] !== '') {
-          this.playMusicByIndex(mIndex)
+      async playMusicInList (index) {
+        if (this.audios[index].url !== '') {
+          this.playMusicByIndex(index)
         } else {
-          this.ayncUpdateUrl(audio, this.playMusicByIndex)
+          this.ayncUpdateUrl(this.audios[index], this.playMusicByIndex)
         }
       },
       starMusic (index, rows) {
