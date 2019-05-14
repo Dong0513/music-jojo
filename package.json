@@ -1,6 +1,6 @@
 {
   "name": "music-jojo",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "liuzhuoling <liuzhuoling2011@hotmail.com>",
   "description": "Download music in china market",
   "license": null,
@@ -54,7 +54,6 @@
   },
   "dependencies": {
     "@moefe/vue-aplayer": "^2.0.0-beta.5",
-    "aplayer": "^1.10.1",
     "axios": "^0.18.0",
     "element-ui": "^2.4.11",
     "fs-extra": "^7.0.1",

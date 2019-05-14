@@ -66,6 +66,11 @@ function createWindow () {
 
   mainWindow.loadURL(winURL)
 
+  mainWindow.on('close', () => {
+    console.log('close event')
+    mainWindow.webContents.send('main-process-messages', 'close')
+  })
+
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -89,21 +94,24 @@ app.request_remote = require('request')
 app.got_remote = require('got')
 app.fs = fs
 app.dialog = dialog
-app.lowdb = db
-db.defaults({setting: { saveDir: '', redotAbout: true, remoteSearch: true }})
+
+db.defaults({setting: { saveDir: '', redotAbout: true, remoteSearch: true }, playlist: []})
   .write()
 
-ipcMain.on('Config', (event, arg) => {
+ipcMain.on('DataOP', (event, arg) => {
   console.log(arg)
   if (arg['method'] === 'set') {
     db.set('setting', arg['setting']).write()
+    db.set('playlist', arg['audios']).write()
     event.returnValue = 'success'
   }
   if (arg['method'] === 'get') {
-    let ret = db.get('setting').value()
-    event.returnValue = ret
+    let setting = db.get('setting').value()
+    let playlist = db.get('playlist').value()
+    event.returnValue = {setting: setting, playlist: playlist}
   }
 })
+
 /**
  * Auto Updater
  *

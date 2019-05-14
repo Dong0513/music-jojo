@@ -109,16 +109,6 @@
                 layout="prev, pager, next">
             </el-pagination>
         </div>
-        <!--<div id="aplayer"></div>-->
-        <!--:audio="auditionInfo"/>-->
-        <!--<aplayer ref="aplayer" :lrcType="1" loop="all" order="random" fixed="true"-->
-             <!--:audio="[{-->
-            <!--name: '给我一个理由忘记',-->
-            <!--artist: 'A-Lin',-->
-            <!--url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',-->
-            <!--cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg',-->
-            <!--lrc: '[00:47.480]雨都停了这片天灰什麽呢\r\n[00:54.480]我还记得你说我们要快乐\r\n[01:01.160]深夜里的脚步声总是刺耳\r\n[01:06.370]害怕寂寞就让狂欢的城市陪我关灯\r\n[01:13.730]只是哪怕周围再多人感觉还是一个人\r\n[01:21.130]每当我笑了心却狠狠的哭着\r\n[01:26.810]\r\n[01:26.900]给我一个理由忘记那麽爱我的你\r\n[01:34.500]给我一个理由放弃当时做的决定\r\n[01:41.800]有些爱越想抽离却越更清晰\r\n[01:45.640]那最痛的距离是你不在身边\r\n[01:51.600]却在我的心里\r\n[01:59.130]\r\n[02:12.690]当我走在去过的每个地方\r\n[02:20.099]总会听到你那最自由的笑\r\n[02:26.919]当我回到一个人住的地方\r\n[02:32.550]最怕看到冬天你最爱穿的那件外套\r\n[02:40.110]只是哪怕周围再多人感觉还是一个人\r\n[02:47.279]每当我笑了心却狠狠的哭着\r\n[02:53.139]\r\n[02:54.890]给我一个理由忘记那么爱我的你\r\n[03:01.390]给我一个理由放弃当时做的决定\r\n[03:08.839]有些爱越想抽离却越更清晰\r\n[03:13.359]那最痛的距离是你不在身边\r\n[03:18.959]却在我的心里\r\n[03:26.750]\r\n[03:45.060]我找不到理由忘记大雨里的别离\r\n[03:52.799]我找不到理由放弃我等你的决心\r\n[03:59.149]有些爱越想抽离却越更清晰\r\n[04:03.780]那最痛的距离是你不在身边\r\n[04:09.179]却在我的心里\r\n[04:26.800]我想你\r\n[04:31.600]'-->
-          <!--}]"/>-->
 
         <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid"></v-nm-player>
 
@@ -138,7 +128,7 @@
             <el-button type="primary" @click="dialogAbout = false">确 定</el-button>
             </span>
         </el-dialog>
-        <el-dialog @closed="reloadSetting"
+        <el-dialog @closed="dataReload"
                 title="设置"
                 :visible.sync="dialogSetting"
                 width="40%">
@@ -165,7 +155,7 @@
     name: 'MainPage',
     data () {
       return {
-        version: '1.0.5',
+        version: '1.0.6',
         saveDir: '',
         remoteSearch: false,
         keyword: '',
@@ -210,46 +200,27 @@
       }
     },
     mounted () {
-      this.reloadSetting()
+      this.dataReload()
       this.getNotice()
       this.getUpdate()
-      // this.aplayer = new APlayer({
-      //   container: document.getElementById('aplayer'),
-      //   autoplay: false,
-      //   asyncPlay: this.playMusicInList,
-      //   cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
-      //   // fixed: true,
-      //   loop: 'all',
-      //   reverse: true,
-      //   order: 'random',
-      //   preload: 'none',
-      //   volume: 0.7,
-      //   listFolded: false,
-      //   listMaxHeight: 150,
-      //   lrcType: 3,
-      //   audio: [
-      //     // {
-      //     //   name: '给我一个理由忘记',
-      //     //   artist: 'A-Lin',
-      //     //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-      //     //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-      //     // }, {
-      //     //   name: '给我一个理由忘记',
-      //     //   artist: 'A-Lin',
-      //     //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-      //     //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-      //     // }
-      //   ]
-      // })
+
+      let that = this
+      this.ipc.on('main-process-messages', (event, arg) => {
+        that.dataSave()
+      })
     },
     methods: {
-      reloadSetting () {
-        let ret = this.ipc.sendSync('Config', {
+      dataReload () {
+        let ret = this.ipc.sendSync('DataOP', {
           method: 'get'
         })
-        this.saveDir = ret['saveDir']
-        this.redotAbout = ret['redotAbout']
-        this.remoteSearch = ret['remoteSearch']
+        this.saveDir = ret['setting']['saveDir']
+        this.redotAbout = ret['setting']['redotAbout']
+        this.remoteSearch = ret['setting']['remoteSearch']
+        this.audios = ret['playlist']
+        for (let i = 0; i < this.audios.length; i++) {
+          this.audios[i]['url'] = ''
+        }
       },
       openFolder () {
         if (!this.checkSaveDir()) {
@@ -301,15 +272,19 @@
           this.dialogSetting = true
         }
       },
-      settingConfirm () {
-        this.ipc.sendSync('Config', {
+      dataSave () {
+        this.ipc.sendSync('DataOP', {
           method: 'set',
           setting: {
             'saveDir': this.saveDir,
             'redotAbout': this.redotAbout,
             'remoteSearch': this.remoteSearch
-          }
+          },
+          audios: this.audios
         })
+      },
+      settingConfirm () {
+        this.dataSave()
         this.dialogSetting = false
       },
       setDownloadDir () {
@@ -726,7 +701,7 @@
     }
 
     .el-table::before {
-        z-index: unset;
+        z-index: unset !important;
     }
 
     .v-nm-player .nm-sheet .s-body .s-cell:nth-child(3) {
