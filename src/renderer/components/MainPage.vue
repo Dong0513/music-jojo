@@ -39,7 +39,7 @@
         <el-table
                 v-loading="loading"
                 :data="songData"
-                height="460"
+                height="500"
                 style="width: 100%">
             <el-table-column
                     prop="songname_ori"
@@ -121,7 +121,7 @@
             <!--lrc: '[00:47.480]雨都停了这片天灰什麽呢\r\n[00:54.480]我还记得你说我们要快乐\r\n[01:01.160]深夜里的脚步声总是刺耳\r\n[01:06.370]害怕寂寞就让狂欢的城市陪我关灯\r\n[01:13.730]只是哪怕周围再多人感觉还是一个人\r\n[01:21.130]每当我笑了心却狠狠的哭着\r\n[01:26.810]\r\n[01:26.900]给我一个理由忘记那麽爱我的你\r\n[01:34.500]给我一个理由放弃当时做的决定\r\n[01:41.800]有些爱越想抽离却越更清晰\r\n[01:45.640]那最痛的距离是你不在身边\r\n[01:51.600]却在我的心里\r\n[01:59.130]\r\n[02:12.690]当我走在去过的每个地方\r\n[02:20.099]总会听到你那最自由的笑\r\n[02:26.919]当我回到一个人住的地方\r\n[02:32.550]最怕看到冬天你最爱穿的那件外套\r\n[02:40.110]只是哪怕周围再多人感觉还是一个人\r\n[02:47.279]每当我笑了心却狠狠的哭着\r\n[02:53.139]\r\n[02:54.890]给我一个理由忘记那么爱我的你\r\n[03:01.390]给我一个理由放弃当时做的决定\r\n[03:08.839]有些爱越想抽离却越更清晰\r\n[03:13.359]那最痛的距离是你不在身边\r\n[03:18.959]却在我的心里\r\n[03:26.750]\r\n[03:45.060]我找不到理由忘记大雨里的别离\r\n[03:52.799]我找不到理由放弃我等你的决心\r\n[03:59.149]有些爱越想抽离却越更清晰\r\n[04:03.780]那最痛的距离是你不在身边\r\n[04:09.179]却在我的心里\r\n[04:26.800]我想你\r\n[04:31.600]'-->
           <!--}]"/>-->
 
-        <v-nm-player ref="nmplayer" pos="top" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_images.jpg" unique="id"></v-nm-player>
+        <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid"></v-nm-player>
 
         <el-dialog
                 :title="'版本：V' + version"
@@ -162,13 +162,11 @@
 </template>
 
 <script>
-  import APlayer from 'APlayer'
   export default {
     name: 'MainPage',
     data () {
       return {
         version: '1.0.5',
-        aplayer: '',
         saveDir: '',
         remoteSearch: false,
         keyword: '',
@@ -216,34 +214,34 @@
       this.reloadSetting()
       this.getNotice()
       this.getUpdate()
-      this.aplayer = new APlayer({
-        container: document.getElementById('aplayer'),
-        autoplay: false,
-        asyncPlay: this.playMusicInList,
-        cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
-        // fixed: true,
-        loop: 'all',
-        reverse: true,
-        order: 'random',
-        preload: 'none',
-        volume: 0.7,
-        listFolded: false,
-        listMaxHeight: 150,
-        lrcType: 3,
-        audio: [
-          // {
-          //   name: '给我一个理由忘记',
-          //   artist: 'A-Lin',
-          //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-          //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-          // }, {
-          //   name: '给我一个理由忘记',
-          //   artist: 'A-Lin',
-          //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
-          //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
-          // }
-        ]
-      })
+      // this.aplayer = new APlayer({
+      //   container: document.getElementById('aplayer'),
+      //   autoplay: false,
+      //   asyncPlay: this.playMusicInList,
+      //   cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
+      //   // fixed: true,
+      //   loop: 'all',
+      //   reverse: true,
+      //   order: 'random',
+      //   preload: 'none',
+      //   volume: 0.7,
+      //   listFolded: false,
+      //   listMaxHeight: 150,
+      //   lrcType: 3,
+      //   audio: [
+      //     // {
+      //     //   name: '给我一个理由忘记',
+      //     //   artist: 'A-Lin',
+      //     //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
+      //     //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
+      //     // }, {
+      //     //   name: '给我一个理由忘记',
+      //     //   artist: 'A-Lin',
+      //     //   url: 'http://dl.stream.qqmusic.qq.com/M5000021MuI339VMgN…F1A5C6F0E31CCD591E4821C&guid=7169462259&fromtag=1',
+      //     //   cover: 'http://p2.music.126.net/YCSTxlHAvrZ-rEs1_dwQUw==/46179488379897.jpg'
+      //     // }
+      //   ]
+      // })
     },
     methods: {
       reloadSetting () {
@@ -455,8 +453,8 @@
         let mIndex = this.musicListIndex(itemData['songmid'])
         if (mIndex === -1) {
           this.audios.push({
-            cover: 'http://qiniu.zoranjojo.top/default_images.jpg',
-            artist: itemData['singer'],
+            cover: 'http://qiniu.zoranjojo.top/default_cover.jpg',
+            author: itemData['singer'],
             name: itemData['songname'],
             lrc: '',
             url: '',
@@ -548,15 +546,13 @@
       },
       playMusicByIndex (index) {
         this.$refs.nmplayer.playNewAudio(this.audios[index])
-        // this.aplayer.list.switch(index)
-        // this.aplayer.play()
       },
       playMusic (index, rows) {
         let itemData = rows[index]
         itemData['loading'] = true
         let mIndex = this.musicListIndex(itemData['songmid'])
         if (mIndex !== -1) {
-          let audio = this.aplayer.list.audios[mIndex]
+          let audio = this.audios[mIndex]
           if (audio['url'] !== '') {
             itemData['loading'] = false
             this.playMusicByIndex(mIndex)
@@ -565,7 +561,7 @@
           }
         } else {
           let index = this.addMusicToList(itemData)
-          let audio = this.aplayer.list.audios[index]
+          let audio = this.audios[index]
           this.ayncUpdateUrl(audio, this.playMusicByIndex, itemData)
         }
       },
@@ -578,11 +574,16 @@
       },
       starMusic (index, rows) {
         let itemData = rows[index]
-        let mIndex = this.addMusicToList(itemData)
-        if (this.firstStarFlag) {
-          this.firstStarFlag = false
-          let audio = this.aplayer.list.audios[mIndex]
-          this.ayncUpdateUrl(audio, () => {}, itemData)
+        let mIndex = this.musicListIndex(itemData['songmid'])
+        if (mIndex === -1) {
+          mIndex = this.addMusicToList(itemData)
+          if (this.firstStarFlag) {
+            this.firstStarFlag = false
+            let audio = this.audios[mIndex]
+            this.ayncUpdateUrl(audio, () => {}, itemData)
+          }
+        } else {
+          this.audios.splice(mIndex, 1)
         }
       },
       getDirectUrl (index, rows, urlCallback) {
@@ -744,5 +745,20 @@
 
     ::-webkit-scrollbar-thumb:hover {
         background-color: #919191;
+    }
+
+    *, *::after, *::before {
+        box-sizing: border-box;
+        max-height: 999999px;
+    }
+
+    html {
+        font-size: 62.5%;
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        scroll-behavior: smooth;
+        line-height: 1.15;
     }
 </style>
