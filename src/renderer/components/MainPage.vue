@@ -65,7 +65,6 @@
                 </template>
             </el-table-column>
             <el-table-column
-                    fixed="right"
                     label="操作">
                 <template slot-scope="scope">
                     <el-button
@@ -724,6 +723,14 @@
     }
     .el-progress__text {
         font-size: 12px !important;
+    }
+
+    .el-table::before {
+        z-index: unset;
+    }
+
+    .v-nm-player .nm-sheet .s-body .s-cell:nth-child(3) {
+        font-size: 1.2rem;
     }
 
     ::-webkit-scrollbar {
