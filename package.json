@@ -59,7 +59,7 @@
     "fs-extra": "^7.0.1",
     "got": "^9.6.0",
     "lowdb": "^1.0.0",
-    "nmplayer": "^1.1.0",
+    "nmplayer": "^1.2.0",
     "sync-request": "^6.0.0",
     "vue": "^2.5.16",
     "vue-aplayer": "^1.6.1",

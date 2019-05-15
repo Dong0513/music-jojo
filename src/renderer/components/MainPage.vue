@@ -110,7 +110,7 @@
             </el-pagination>
         </div>
 
-        <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid" sheet-height="330"></v-nm-player>
+        <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid" :sheet-height="330"></v-nm-player>
 
         <el-dialog
                 :title="'版本：V' + version"
@@ -199,7 +199,7 @@
         app: require('electron').remote.app
       }
     },
-    mounted () {
+    created () {
       this.dataReload()
       this.getNotice()
       this.getUpdate()
@@ -289,13 +289,7 @@
           if (files) {
             console.log(files[0])
             that.saveDir = files[0]
-            that.ipc.sendSync('Config', {
-              method: 'set',
-              setting: {
-                'saveDir': files[0],
-                'redotAbout': that.redotAbout
-              }
-            })
+            that.dataSave()
             that.$message.success('设置下载目录成功')
           }
         })
@@ -420,7 +414,7 @@
       addMusicToList (itemData) {
         let mIndex = this.musicListIndex(itemData['songmid'])
         if (mIndex === -1) {
-          this.audios.push({
+          this.$refs.nmplayer.addAudio({
             cover: 'http://qiniu.zoranjojo.top/default_cover.jpg',
             author: itemData['singer'],
             name: itemData['songname'],
