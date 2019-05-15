@@ -110,7 +110,7 @@
             </el-pagination>
         </div>
 
-        <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid"></v-nm-player>
+        <v-nm-player style="left: 0" ref="nmplayer" pos="bottom" :audios="audios" :async-play="playMusicInList" default-cover="http://qiniu.zoranjojo.top/default_cover.jpg" unique="songmid" sheet-height="330"></v-nm-player>
 
         <el-dialog
                 :title="'版本：V' + version"
@@ -244,13 +244,7 @@
         if (name === 'about') {
           this.dialogAbout = true
           this.redotAbout = false
-          this.ipc.sendSync('Config', {
-            method: 'set',
-            setting: {
-              'saveDir': this.saveDir,
-              'redotAbout': false
-            }
-          })
+          this.dataSave()
         }
         if (name === 'update') {
           let msg = ''
