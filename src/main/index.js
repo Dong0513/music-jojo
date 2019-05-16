@@ -61,40 +61,45 @@ function createWindow () {
     options.titleBarStyle = 'hidden'
     Menu.setApplicationMenu(null)
   }
+
   mainWindow = new BrowserWindow(options)
   // const menu = Menu.buildFromTemplate(template)
   // Menu.setApplicationMenu(menu)
 
+  if (process.platform === 'win32') {
+    let tray = null
+    // 创建系统通知区菜单
+    tray = new Tray(`${__static}/icon.ico`)
+
+    mainWindow.on('show', () => {
+      tray.setHighlightMode('always')
+    })
+
+    mainWindow.on('hide', () => {
+      tray.setHighlightMode('never')
+    })
+
+    const contextMenu = Menu.buildFromTemplate([
+      {label: '退出', click: () => { mainWindow.destroy() }} // 我们需要在这里有一个真正的退出（这里直接强制退出）
+    ])
+
+    tray.setToolTip('Music-Jojo')
+    tray.setContextMenu(contextMenu)
+    tray.on('click', () => { // 我们这里模拟桌面程序点击通知区图标实现打开关闭应用的功能
+      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+      mainWindow.isVisible() ? mainWindow.setSkipTaskbar(false) : mainWindow.setSkipTaskbar(true)
+    })
+  }
+
   mainWindow.loadURL(winURL)
 
-  let tray = null
-  // 创建系统通知区菜单
-  tray = new Tray(`${__static}/icon.ico`)
-
   mainWindow.on('close', (event) => {
-    mainWindow.hide()
-    mainWindow.setSkipTaskbar(true)
     mainWindow.webContents.send('main-process-messages', 'close')
-    event.preventDefault()
-  })
-
-  mainWindow.on('show', () => {
-    tray.setHighlightMode('always')
-  })
-
-  mainWindow.on('hide', () => {
-    tray.setHighlightMode('never')
-  })
-
-  const contextMenu = Menu.buildFromTemplate([
-    {label: '退出', click: () => { mainWindow.destroy() }} // 我们需要在这里有一个真正的退出（这里直接强制退出）
-  ])
-
-  tray.setToolTip('Music-Jojo')
-  tray.setContextMenu(contextMenu)
-  tray.on('click', () => { // 我们这里模拟桌面程序点击通知区图标实现打开关闭应用的功能
-    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
-    mainWindow.isVisible() ? mainWindow.setSkipTaskbar(false) : mainWindow.setSkipTaskbar(true)
+    if (process.platform === 'win32') {
+      mainWindow.hide()
+      mainWindow.setSkipTaskbar(true)
+      event.preventDefault()
+    }
   })
 
   mainWindow.on('closed', () => {
