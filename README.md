@@ -1,11 +1,11 @@
 # music-jojo
 
 > 一款基于electron-vue的高颜值音乐下载器, 让你能非常优雅的下载音乐
-感谢moresound.tk提供的稳定的解析接口
+感谢 loliconer 提供的 NMPlayer
 
-![avatar](http://qiniu.zoranjojo.top/20190122142207.png)
+![avatar](http://qiniu.zoranjojo.top/music-jojo.png)
 
-![avatar](http://qiniu.zoranjojo.top/20190122142032.png)
+![avatar](http://qiniu.zoranjojo.top/music-jojo1.png)
 
 Enjoy, 如果觉得好用, 请不要吝啬 ```star``` 或者 ```follow``` 哦, 或者顺便 ```buy me a coffee```
 
