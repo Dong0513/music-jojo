@@ -1,12 +1,13 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron'
+import { app, BrowserWindow, Menu, dialog, ipcMain, Tray } from 'electron'
 import * as fs from 'fs'
 import path from 'path'
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
 const STORE_PATH = app.getPath('userData') // 获取electron应用的用户目录
+console.log('userData path: ', STORE_PATH)
 
 const fsExtra = require('fs-extra')
 if (!fsExtra.pathExistsSync(STORE_PATH)) { // 如果不存在路径
@@ -66,9 +67,34 @@ function createWindow () {
 
   mainWindow.loadURL(winURL)
 
-  mainWindow.on('close', () => {
-    console.log('close event')
+  let tray = null
+  // 创建系统通知区菜单
+  tray = new Tray(path.join(__dirname, 'icon.ico'))
+
+  mainWindow.on('close', (event) => {
+    mainWindow.hide()
+    mainWindow.setSkipTaskbar(true)
     mainWindow.webContents.send('main-process-messages', 'close')
+    event.preventDefault()
+  })
+
+  mainWindow.on('show', () => {
+    tray.setHighlightMode('always')
+  })
+
+  mainWindow.on('hide', () => {
+    tray.setHighlightMode('never')
+  })
+
+  const contextMenu = Menu.buildFromTemplate([
+    {label: '退出', click: () => { mainWindow.destroy() }} // 我们需要在这里有一个真正的退出（这里直接强制退出）
+  ])
+
+  tray.setToolTip('Music-Jojo')
+  tray.setContextMenu(contextMenu)
+  tray.on('click', () => { // 我们这里模拟桌面程序点击通知区图标实现打开关闭应用的功能
+    mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+    mainWindow.isVisible() ? mainWindow.setSkipTaskbar(false) : mainWindow.setSkipTaskbar(true)
   })
 
   mainWindow.on('closed', () => {

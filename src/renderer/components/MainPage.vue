@@ -120,7 +120,7 @@
                 <span>一款高颜值的音乐下载器, 让你能非常优雅的下载音乐, 详细信息可以访问 Github<br>
                     <a href="https://github.com/liuzhuoling2011/music-jojo" target="_blank">https://github.com/liuzhuoling2011/music-jojo</a>
                 </span>
-                <br/><br/>
+                <br/><br/>感谢 loliconer 提供的 NMPlayer<br/>
                 <div>也可以关注下面公众号，获取最新信息~</div>
                 <div><img style="width: 35%" src="http://qiniu.zoranjojo.top/qrcode_for_gh_81(03-26-07-35-31).jpg"/></div>
             </div>
