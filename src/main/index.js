@@ -69,7 +69,7 @@ function createWindow () {
 
   let tray = null
   // 创建系统通知区菜单
-  tray = new Tray(path.join(__dirname, 'icon.ico'))
+  tray = new Tray(`${__static}/icon.ico`)
 
   mainWindow.on('close', (event) => {
     mainWindow.hide()
